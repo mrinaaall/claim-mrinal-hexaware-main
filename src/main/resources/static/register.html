@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Page</title>
+  <!-- Using the same style sheet that we used for LogIn Page -->
+  <link rel="stylesheet" href="style.css">
+  <script defer src="redirect.js"></script>
+</head>
+
+<body>
+  <main id="main-holder">
+    <h1 id="login-header">Sign Up</h1>
+
+    <form id="login-form">
+      <input type="text" name="firstname" id="firstname" class="login-form-field" placeholder="First Name" required>
+      <input type="text" name="lastname" id="lastname" class="login-form-field" placeholder="Last Name">
+      <!-- Email Validation: input type="email" -- this will validate email by default -->
+      <input type="email" name="email" id="email" class="login-form-field" placeholder="Email ID" required>
+      <input type="text" name="username" id="username" class="login-form-field" placeholder="User Name" required>
+      <input type="password" name="password" id="password-field" class="login-form-field" placeholder="Password" required>
+      <!-- TODO: Redirect to index.html after hitting REGISTER button.
+    SUBMIT type will submit the details to our database.-->
+      <input type="submit" value="Create Account" id="register-submit">
+    </form>
+  </main> 
+</body>
+
+</html>

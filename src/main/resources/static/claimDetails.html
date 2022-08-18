@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Claim Details</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<script>
+
+		function goBack() {
+			sessionStorage.setItem("amount", '');
+			sessionStorage.setItem("phoneNumber", '');
+			sessionStorage.setItem("policyNumber", '');
+			sessionStorage.setItem("status", '');
+			sessionStorage.setItem("fileData", '');
+			document.location.href = '\claimsData.html'
+		}
+
+		function deleteData() {
+			const url = `http://localhost:8080/api/delete/${sessionStorage.getItem('claimId')}`;
+			const flag = window.confirm("Do you really want to Delete this claim?");
+			const username =sessionStorage.getItem('userName');
+			if (flag) {
+				fetch(url, {
+					headers: {
+						'content-type': 'application/json;charset=utf-8',
+						'userName': username
+					}, method: 'DELETE'
+				})
+						.then(
+								response => response.json(),
+						).then(data => {
+							window.alert("Claim deleted successfully!");
+							console.log(data);
+							document.location.href = "\claimsData.html"
+						}
+				).catch(e => {
+				})
+			}
+		}
+
+		function updateData() {
+			const url = `http://localhost:8080/api/updateClaim/${sessionStorage.getItem('claimId')}`
+			const firstName = document.getElementById("first_name").value;
+			const lastName = document.getElementById('last_name').value;
+			const email = document.getElementById('email').value;
+			const phoneNumber = parseInt(document.getElementById('phoneNumber').value);
+			const policyNumber = document.getElementById('policyNumber').value;
+			const amount = parseFloat(document.getElementById('amount').value);
+			const fileElement = document.getElementById('fileInput')
+			const status = fileElement.files.length !== 0 ? "Submitted" : "In Progress";
+			const username =sessionStorage.getItem('userName');
+			const data = {
+				firstName,
+				lastName,
+				email,
+				phoneNumber,
+				policyNumber,
+				amount,
+				status,
+			};
+
+			fetch(url, {
+				headers: {
+					'content-type': 'application/json;charset=utf-8',
+					'userName': username
+				}, method: 'PUT', body: JSON.stringify(data)
+			})
+				.then(
+					response => response.json(),
+				).then(data => {
+					window.alert('Claim successfully updated !');
+					sessionStorage.setItem("amount", data.amount);
+					sessionStorage.setItem("email", data.email);
+					sessionStorage.setItem("firstName", data.firstName);
+					sessionStorage.setItem("lastName", data.lastName);
+					sessionStorage.setItem("phoneNumber", data.phoneNumber);
+					sessionStorage.setItem("policyNumber", data.policyNumber);
+					sessionStorage.setItem("status", data.status);
+					fileElement.files.length !== 0 ? uploadFile(data.id) : location.reload();
+				})
+				.catch(err => {
+					console.log("error", err);
+					window.location.href="\error.html";
+				});
+		}
+
+		function uploadFile(id) {
+			let fileElement = document.getElementById('fileInput');
+
+			let file = fileElement.files[0];
+
+			let formData = new FormData();
+			formData.append('file', file);
+
+			const url = `http://localhost:8080/api/uploadFile/${id}`;
+
+			fetch(url, {
+				method: 'POST',
+				body: formData
+			}).then(response => response.json())
+				.then(data => {
+					console.log(data);
+					// sessionStorage.setItem("fileData", JSON.stringify(data));
+					getfileDetails(id);
+				})
+				.catch(error => {
+					console.log('error', error);
+				});
+		}
+
+		function getfileDetails(elementId) {
+			fetch("http://localhost:8080/api/getFile/" + `${elementId}`).then(
+					response => response.json()
+			).then(
+					data => {
+						sessionStorage.setItem('fileData', JSON.stringify(data));
+						location.reload();
+					})
+		}
+
+		window.onload = function () {
+			//  document.getElementsByName('username').values = sessionStorageData;
+			document.getElementById("first_name").setAttribute('value', sessionStorage.getItem('firstName'));
+			document.getElementById("amount").setAttribute('value', sessionStorage.getItem('amount'));
+			document.getElementById("last_name").setAttribute('value', sessionStorage.getItem('lastName'));
+			document.getElementById("email").setAttribute('value', sessionStorage.getItem('email'));
+			document.getElementById("policyNumber").setAttribute('value', sessionStorage.getItem('policyNumber'));
+			document.getElementById("phoneNumber").setAttribute('value', sessionStorage.getItem('phoneNumber'));
+			document.getElementById("status").setAttribute('value', sessionStorage.getItem('status'));
+			const fileData = sessionStorage.getItem('fileData') || '';
+			const parsedData = fileData !== '' && JSON.parse(fileData);
+			let temp = 'File: ';
+			fileData !== '' && parsedData.map((data, index) => {
+				temp +=  data.fileName + (index !== parsedData.length-1 ? " , " : '')
+			});
+			console.log('fileData');
+			file.innerHTML = fileData !== '' ? temp : 'File Not uploaded';
+			// document.getElementById("fileName").setAttribute('value', sessionStorage.getItem('status') !== 'In Progress' && sessionStorage.getItem('fileData') ? sessionStorage.getItem('fileName') : 'Not uploaded');
+			document.getElementById("username").setAttribute('value', sessionStorage.getItem('userName'));
+		}
+
+
+	</script>
+</head>
+
+<body>
+	<div class="container">
+		<div class="well" style="margin-top: 10px; padding-top: 10px;">
+			<h1>Claim details</h1>
+			<h6>Status: <input type="text" id="status" style="border: 0px;" disabled /></h6>
+			<h6 id="file">File:  </h6>
+			<h6>Username: <input type="text" id="username" style="border: 0px;" disabled /></h6>
+		</div>
+		<div class="col-lg-12 well">
+			<div class="row">
+				<form name="RegForm" method="POST" style="padding-left: 30px;padding-right: 30px;">
+					<div class="row">
+						<div class="col-sm-6 form-group">
+							<label>First Name</label>
+							<input type="text" id="first_name" placeholder="Enter First Name Here.."
+								class="form-control" />
+						</div>
+						<div class="col-sm-6 form-group">
+							<label>Last Name</label>
+							<input type="text" id="last_name" placeholder="Enter Last Name Here.."
+								class="form-control" />
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6 form-group">
+							<label>Phone Number</label>
+							<input type="number" id="phoneNumber" placeholder="Enter Phone Number Here.."
+								class="form-control" />
+						</div>
+						<div class="col-sm-6 form-group">
+							<label>Email Address</label>
+							<input type="text" id="email" placeholder="Enter Email Address Here.."
+								class="form-control" />
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6 form-group">
+							<label>Policy Number</label>
+							<input type="text" id="policyNumber" placeholder="Enter Policy Number Here.."
+								class="form-control" />
+						</div>
+						<div class="col-sm-6 form-group">
+							<label>Amount</label>
+							<input type="number" id="amount" placeholder="Enter Amount Here.." class="form-control" />
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 15px;">
+						<input type="file" id="fileInput" name="filename" class="form-control">
+					</div>
+					<div class="row">
+						<div class="col-sm-4 form-group">
+							<button type="button" class="btn btn-lg btn-info" onclick="goBack()">Back</button>
+						</div>
+						<div class="col-sm-4 form-group">
+							<button type="button" class="btn btn-lg btn-info" onclick="updateData()">Update</button>
+						</div>
+						<div class="col-sm-4 form-group">
+							<button type="button" class="btn btn-lg btn-info" onclick="deleteData()">Delete</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	</div>
+	</div>
+</body>
+
+</html>

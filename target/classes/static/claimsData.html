@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Claims Data</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		* {box-sizing: border-box;}
+
+		body {
+			margin: 0;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		.header {
+			overflow: hidden;
+			/*background-color: #f1f1f1;*/
+			background-color: #f1f1f1;
+			padding: 20px 10px;
+		}
+
+		.header a {
+			float: left;
+			color: black;
+			text-align: center;
+			padding: 12px;
+			text-decoration: none;
+			font-size: 18px;
+			line-height: 25px;
+			border-radius: 4px;
+		}
+
+		.header a.logo {
+			font-size: 25px;
+			font-weight: bold;
+		}
+
+		.header a:hover {
+			background-color: #ddd;
+			color: black;
+		}
+
+		.header a.active {
+			background-color: dodgerblue;
+			color: white;
+		}
+
+		.header-right {
+			float: right;
+			display: flex;
+		}
+
+		@media screen and (max-width: 500px) {
+			.header a {
+				float: none;
+				display: block;
+				text-align: left;
+			}
+
+			.header-right {
+				float: none;
+			}
+		}
+		table {
+			font-family: arial, sans-serif;
+			border-collapse: collapse;
+			width: 100%;
+		}
+
+		td,
+		th {
+			border: 1px solid #dddddd;
+			text-align: left;
+			padding: 8px;
+		}
+
+		tr:nth-child(even) {
+			background-color: #dddddd;
+		}
+
+		.table-sortable th {
+			cursor: pointer;
+		}
+
+		.table-sortable .th-sort-asc::after {
+			content: "\25b4";
+		}
+
+		.table-sortable .th-sort-desc::after {
+			content: "\25be";
+		}
+
+		.table-sortable .th-sort-asc::after,
+		.table-sortable .th-sort-desc::after {
+			margin-left: 5px;
+		}
+
+		.table-sortable .th-sort-asc,
+		.table-sortable .th-sort-desc {
+			background: rgba(0, 0, 0, 0.1);
+		}
+	</style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script>
+
+		window.onload = function () {
+			const id = sessionStorage.getItem('id');
+			getData(id, false);
+			document.getElementById("username").setAttribute('value', sessionStorage.getItem('userName'));
+			addEventToHeaders();
+		};
+
+
+		function viewDetails(elementId) {
+
+			fetch("http://localhost:8080/api/claimDetails/" + `${elementId}`).then(
+					response => response.json()
+			).then(
+					data => {
+						console.log(data);
+						sessionStorage.setItem("amount", data.amount);
+						sessionStorage.setItem("claimId", data.id);
+						sessionStorage.setItem("phoneNumber", data.phoneNumber);
+						sessionStorage.setItem("policyNumber", data.policyNumber);
+						sessionStorage.setItem("status", data.status);
+						data.status === 'Submitted' ? getfileDetails(elementId) : document.location.href = '\claimDetails.html';
+					}
+			)
+		}
+
+		function getfileDetails(elementId) {
+			fetch("http://localhost:8080/api/getFile/" + `${elementId}`).then(
+					response => response.json()
+			).then(
+					data => {
+						console.log('data', data);
+						sessionStorage.setItem('fileData', JSON.stringify(data));
+						// sessionStorage.setItem("fileDownloadUri", data.fileDownloadUri);
+						// sessionStorage.setItem("fileName", data.fileName);
+						document.location.href = '\claimDetails.html';
+					})
+		}
+
+
+		function getData(id, flag) {
+			const url = flag ? "http://localhost:8080/api/claimDetails/" + `${id}` : "http://localhost:8080/api/claim/" + id;
+			fetch(url)
+					.then(res => res.json())
+					.then(out => {
+						var temp = "";
+
+						if (flag) {
+							temp += "<tr>";
+							temp += "<td class='align-middle'>" + out.id + "</td>";
+							temp += "<td class='align-middle'>" + out.firstName + "</td>";
+							temp += "<td class='align-middle'>" + out.lastName + "</td>";
+							temp += "<td class='align-middle'>" + out.phoneNumber + "</td>";
+							temp += "<td class='align-middle'>" + out.policyNumber + "</td>";
+							temp += "<td class='align-middle'>" + out.amount + "</td>";
+							temp += "<td class='align-middle'>" + out.status + "</td>";
+							temp += "<td class='align-middle'>" + `<button type="button" class="btn btn-outline-warning btn-sm" onclick="viewDetails(${out.id})">View</button>` + "</td>";
+							temp += "</tr>"
+							myData.innerHTML = temp;
+						} else {
+							out.forEach(element => {
+								temp += "<tr>";
+								temp += "<td class='align-middle'>" + element.id + "</td>";
+								temp += "<td class='align-middle'>" + element.firstName + "</td>";
+								temp += "<td class='align-middle'>" + element.lastName + "</td>";
+								temp += "<td class='align-middle'>" + element.phoneNumber + "</td>";
+								temp += "<td class='align-middle'>" + element.policyNumber + "</td>";
+								temp += "<td class='align-middle'>" + element.amount + "</td>";
+								temp += "<td class='align-middle'>" + element.status + "</td>";
+								temp += "<td class='align-middle'>" + `<button type="button" class="btn btn-outline-warning btn-sm" onclick="viewDetails(${element.id})">View</button>` + "</td>";
+								temp += "</tr>"
+
+
+							});
+							myData.innerHTML = temp;
+						}
+					})
+					.catch(err => {
+						window.location.href = '\error.html';
+						console.error(err)
+					})
+		}
+
+		/**
+		 * Sorts a HTML table.
+		 *
+		 * @param {HTMLTableElement} table The table to sort
+		 * @param {number} column The index of the column to sort
+		 * @param {boolean} asc Determines if the sorting will be in ascending
+		 */
+		function sortTableByColumn(table, column, asc = true) {
+			const dirModifier = asc ? 1 : -1;
+			const tBody = table.tBodies[0];
+			const rows = Array.from(tBody.querySelectorAll("tr"));
+			const sortedRows = rows.sort((a, b) => {
+
+				let aColText, bColText;
+
+				if (column === 0 || column === 3 || column === 5) {
+					// Sort each row for numbers
+					aColText = parseFloat(a.querySelector(`td:nth-child(${column + 1})`).textContent.trim());
+					bColText = parseFloat(b.querySelector(`td:nth-child(${column + 1})`).textContent.trim());
+				} else {
+
+					// Sort each row
+					aColText = a.querySelector(`td:nth-child(${column + 1})`).textContent.trim().toLowerCase();
+					bColText = b.querySelector(`td:nth-child(${column + 1})`).textContent.trim().toLowerCase();
+				}
+
+				return aColText > bColText ? (1 * dirModifier) : (-1 * dirModifier);
+			});
+
+			// Remove all existing TRs from the table
+			while (tBody.firstChild) {
+				tBody.removeChild(tBody.firstChild);
+			}
+
+			// Re-add the newly sorted rows
+			tBody.append(...sortedRows);
+
+			// Remember how the column is currently sorted
+			table.querySelectorAll("th").forEach(th => th.classList.remove("th-sort-asc", "th-sort-desc"));
+			table.querySelector(`th:nth-child(${column + 1})`).classList.toggle("th-sort-asc", asc);
+			table.querySelector(`th:nth-child(${column + 1})`).classList.toggle("th-sort-desc", !asc);
+		}
+
+		function addEventToHeaders() {
+			document.querySelectorAll(".table-sortable th").forEach(headerCell => {
+				headerCell.addEventListener("click", () => {
+					const tableElement = headerCell.parentElement.parentElement.parentElement;
+					const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+					const currentIsAscending = headerCell.classList.contains("th-sort-asc");
+					sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+				});
+			});
+		}
+
+		function search() {
+			const id = document.getElementById('form1').value;
+			// Validation of ID begins 
+			// Returns a prompt if no ID is entered
+			if (id == null || id === "") {
+        	window.alert('Please enter a valid ID !');
+    	}
+			else {
+				getData(id, true);
+			}
+			// Validation of ID ends
+		}
+
+		function newClaim() {
+			document.location.href = '\nnewClaim.html'
+		}
+
+		function logOut() {
+			document.location.href = '\nindex.html'
+			sessionStorage.clear()
+		}
+
+	</script>
+</head>
+
+<body>
+<div class="header">
+	<a class="logo">Insurance - Claim Management</a>
+	<div class="header-right">
+		<!-- Check a better solution for size -->
+		<h4>Hi, <input type="text" id="username" style="border: 0px;"  size="8" disabled /></h4>
+		<button class="btn btn-primary" onclick="logOut()" type="button">
+			LogOut
+		</button>
+	</div>
+</div>
+<!--    <div class="collapse navbar-collapse"-->
+<!--         id="navcol-1">-->
+<!--        <span class="navbar-text"> <a class="login" href="#">Log Out</a></span></div>-->
+</div>
+<section class="p-4 mb-4 d-flex align-items-center flex-column">
+
+	<div class="well" style="margin-top: 10px; padding-top: 10px;">
+		<h1>List of Claims</h1>
+		<!--         <h6>Username: <input type="text" id="username" style="border: 0px;" disabled /></h6>-->
+	</div>
+</section>
+<section class="p-4 mb-4 d-flex align-items-center flex-column">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<!-- Container wrapper -->
+		<div class="container-fluid">
+			<!-- Search form -->
+			<div class="input-group ps-5">
+				<button class="btn btn-primary" onclick="newClaim()" type="button">
+					+ New Claim
+				</button>
+				<div class=" ml-4 form-outline" id="navbar-search-autocomplete">
+					<input class="form-control" id="form1" placeholder="Search by ID" required type="search"/>
+				</div>
+				<button class="ml-4 btn btn-primary" onclick="search()" type="button">
+					Search
+				</button>
+			</div>
+		</div>
+	</nav>
+</section>
+
+<div style="width: 100%;">
+	<table class="table-sortable table table-hover ml-2" style="margin-left:5% !important ; width: 90%;">
+		<thead class="thead-dark">
+		<tr>
+			<th scope="col">Id</th>
+			<th scope="col">First name</th>
+			<th scope="col">Last name</th>
+			<th scope="col">Phone</th>
+			<th scope="col">Policy #</th>
+			<th scope="col">Amount ($)</th>
+			<th scope="col">Status</th>
+			<th scope="col" style="pointer-events: none;">Action</th>
+		</tr>
+
+		</thead>
+		<tbody id="myData"></tbody>
+	</table>
+</div>
+</body>
+
+</html>
