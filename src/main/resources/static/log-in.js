@@ -19,9 +19,9 @@ loginButton.addEventListener("click", (e) => {
         window.alert('Please enter valid password !');
     } 
         // Add else if to check if username and password exist in the database: ToDo - Make it DYNAMIC!!
-        else if (username != "mrinaaall" || password != "abc123") {
-            window.alert('Incorrect LogIn Details')
-        }
+        // else if (username != "mrinaaall" || password != "abc123") {
+        //     window.alert('Incorrect LogIn Details')
+        // }
 
         else {
         const url = "http://localhost:8080/api/login";
