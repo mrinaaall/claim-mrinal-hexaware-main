@@ -46,7 +46,10 @@ loginButton.addEventListener("click", (e) => {
                 sessionStorage.setItem("email", data.email);
                 console.log('data', data);
                 location.href = "claimsData.html";
-            }).catch(err => console.log('err', err)
+            }).catch(err => {
+                console.log('err', err)
+                location.href = "error.html";
+            }
         )
     }
 })

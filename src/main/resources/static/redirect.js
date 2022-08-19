@@ -17,7 +17,7 @@ registerButton.addEventListener("click", (e) => {
         window.alert('Please enter valid first name !');
     } else if (lastName == null || lastName === "") {
         window.alert('Please enter valid last name !');
-    } else if (email == null || email === "" || regEmail.test(email)) {
+    } else if (email == null || email === "" ) {
         window.alert('Please enter valid email !');
     } else if (username == null || username === "") {
         window.alert('Please enter valid user name !');
@@ -26,11 +26,11 @@ registerButton.addEventListener("click", (e) => {
     } else {
 
         const body = {
-            firstName,
-            lastName,
-            email,
+            "firstName": firstName,
+            "lastName": lastName,
+            'email': email,
             "userName":username,
-            password
+            "password":password
         }
 
         const url = "http://localhost:8080/api/register"
@@ -44,6 +44,7 @@ registerButton.addEventListener("click", (e) => {
                 console.log('Data', data);
                 location.href = "index.html";
         }).catch(err=>{
+            window.alert("Username already exists !")
             console.log('err', err);
         })
 

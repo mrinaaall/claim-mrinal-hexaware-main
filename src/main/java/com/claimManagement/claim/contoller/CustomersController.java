@@ -33,7 +33,9 @@ public class CustomersController {
     public ResponseEntity<Customers> login(@RequestBody LoginDto loginDto){
         logger.debug("entered in the login method");
         try {
-            return new ResponseEntity<>(customerService.login(loginDto), HttpStatus.FOUND);
+            Customers customers = customerService.login(loginDto);
+            if (null != customers) return new ResponseEntity<>(customerService.login(loginDto), HttpStatus.FOUND);
+            else return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e){
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
